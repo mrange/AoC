@@ -17,7 +17,7 @@ module Result =
   open FParsec
   open System.Linq
 
-  let pno = spaces >>. pint32
+  let pno = spaces1 >>. pint32
   let presult : Parser<_, unit> =
     parse {
       do! skipString "Card"
