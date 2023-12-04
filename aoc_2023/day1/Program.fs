@@ -9,6 +9,7 @@ let digits =
   |> SearchValues.Create 
 
 
+[<TailCall>]
 let rec sum s i =
   if i < rows.Length then
     let n = i + 1

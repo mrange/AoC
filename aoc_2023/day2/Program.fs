@@ -44,24 +44,26 @@ module Game_ =
     match run pgame s with
     | Success (g, _, _) -> g
     | Failure (m, _, _) -> failwithf "%s" m
+
+  module Loops = 
+    [<TailCall>] 
+    let rec invalidSet r g b picks =
+      match picks with
+      | []    ->
+        false
+        || r > MaxRed
+        || g > MaxGreen
+        || b > MaxBlue
+          
+      | (v, ball)::xs ->
+        match ball with
+        | Red   -> invalidSet (r + v) g       b       xs
+        | Green -> invalidSet r       (g + v) b       xs
+        | Blue  -> invalidSet r       g       (b + v) xs
+
   let checkGame s =
     let (Game (no, sets)) = parseGame s
-    let invalidSet (GameSet picks) =
-      let rec loop r g b picks =
-        match picks with
-        | []    ->
-          false
-          || r > MaxRed
-          || g > MaxGreen
-          || b > MaxBlue
-          
-        | (v, ball)::xs ->
-          match ball with
-          | Red   -> loop (r + v) g       b       xs
-          | Green -> loop r       (g + v) b       xs
-          | Blue  -> loop r       g       (b + v) xs
-          
-      loop 0 0 0 picks
+    let invalidSet (GameSet picks) = Loops.invalidSet 0 0 0 picks
     let invalid = 
       sets 
       |> List.exists invalidSet
