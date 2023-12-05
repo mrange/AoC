@@ -120,7 +120,7 @@ module Parse =
     else
       None
 
-  let mkMap header ranges maps =
+  let addMap header ranges maps =
     match header with
     | None        -> maps
     | Some (f,t)  ->
@@ -132,40 +132,33 @@ module Parse =
 
   module Loops =
     [<TailCall>]
-    let rec input 
-      (sr : StringReader)
-      seeds 
-      maps 
-      header 
-      ranges =
+    let rec input (sr : StringReader) seeds maps header ranges =
       match sr.ReadLine () with
       | PIsNull         ->
-        let maps = mkMap header ranges maps
+        let maps = addMap header ranges maps
         {
           Seeds = seeds
           Maps  = maps |> List.rev |> List.toArray
-        } |> Some
+        }
       | PEmpty          -> input sr seeds maps header ranges
       | PMapRange range -> input sr seeds maps header (range::ranges)
       | PMapHeader (f,t)->
-        let maps = mkMap header ranges maps
+        let maps = addMap header ranges maps
         input sr seeds maps (Some (f,t)) []
       | l               -> failwithf "Line unmatched: %s" l
 
     let rec initial (sr : StringReader) =
       match sr.ReadLine () with
-      | PIsNull       -> None
+      | PIsNull       -> failwithf "Unexected EOF"
       | PEmpty        -> initial sr
       | PSeeds seeds  -> input sr seeds [] None []
       | l             -> failwithf "Line unmatched: %s" l
 
-  let input s : Input option =
+  let input s : Input =
     use sr = new StringReader (s)
     Loops.initial sr
 
-let oinput = Parse.input data
-
-let input = oinput.Value
+let input = Parse.input data
 
 let sourceMaps = 
   input.Maps 
