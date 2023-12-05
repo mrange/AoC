@@ -79,16 +79,10 @@ module Parse =
   let reMapHeader = re"^(?<from>[a-z]+)-to-(?<to>[a-z]+) map:$"
 
   let (|PIsNull|_|) s : unit option =
-    if isNull s then
-      Some ()
-    else
-      None
+    if isNull s then Some () else None
 
   let (|PEmpty|_|) s : unit option =
-    if String.IsNullOrWhiteSpace s then
-      Some ()
-    else
-      None
+    if String.IsNullOrWhiteSpace s then Some () else None
 
   let (|PSeeds|_|) s : int64 array option =
     let m = reSeeds.Match s
