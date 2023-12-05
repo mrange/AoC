@@ -1,7 +1,7 @@
 ﻿open System
 open System.IO
 
-let data = """
+let data_ = """
 seeds: 79 14 55 13
 
 seed-to-soil map:
@@ -37,15 +37,17 @@ humidity-to-location map:
 56 93 4
 """
 
+let data = File.ReadAllText "input.txt"
+
 type MapRange =
   {
     Destination : int64
     Source      : int64
     Length      : int64
   }
-  member x.MapValue s =
-    if s >= x.Source && s < (x.Source + x.Length) then
-      Some (s - x.Source + x.Destination)
+  member x.MapValue v =
+    if v >= x.Source && v < (x.Source + x.Length) then
+      Some (v - x.Source + x.Destination)
     else
       None
 
@@ -55,10 +57,11 @@ type Map =
     Destination : string
     MapRanges   : MapRange array
   }
-  member x.MapValue s =
-    match x.MapRanges |> Array.tryPick (fun x -> x.MapValue s) with
-    | Some d  -> d
-    | None    -> s
+  member x.MapValue (s, v) =
+    if s <> x.Source then failwithf "Unexpected source type: %s" s
+    match x.MapRanges |> Array.tryPick (fun x -> x.MapValue v) with
+    | Some d  -> x.Destination, d
+    | None    -> x.Destination, v
 
 type Input =
   {
@@ -160,5 +163,30 @@ module Parse =
     use sr = new StringReader (s)
     Loops.initial sr
 
-let input = Parse.input data
-printfn "%A" input
+let oinput = Parse.input data
+
+let input = oinput.Value
+
+let sourceMaps = 
+  input.Maps 
+  |> Array.map (fun x -> x.Source, x) 
+  |> Map.ofArray
+
+[<TailCall>]
+let rec mapValue (s, v) =
+  match sourceMaps |> Map.tryFind s with
+  | None    -> (s, v)
+  | Some m  -> mapValue (m.MapValue (s, v))
+
+let seeds = input.Seeds |> Array.map (fun x -> "seed", x)
+
+printfn "Input: %A" seeds
+
+let results = seeds |> Array.map mapValue
+
+printfn "Output: %A" results
+
+
+let minValue = results |> Array.map snd |> Array.min
+
+printfn "%A" minValue
