@@ -66,3 +66,46 @@ do
     printfn "Result: %d, %d, %d" c0 c1 r
   | None ->
     printfn "No result"
+
+module BI =
+  module Loops =
+    let rec sqrtBI i bottom top =
+      if bottom + 1I < top then
+        let mid = (bottom + top) / 2I
+        let sqr = mid*mid
+        if sqr = i then
+          mid
+        elif sqr > i then
+          sqrtBI i bottom mid
+        else
+          sqrtBI i mid top
+      else
+        printfn "%A, %A, %A" (bottom*bottom) (top*top) i
+        bottom
+  let sqrtBI i = Loops.sqrtBI i bigint.Zero i
+
+  let getChargeBI distance time =
+    let _2 = 2I
+    let _4 = 4I
+    let i = time*time-_4*distance
+    if i >= bigint.Zero then
+      let si = sqrtBI i
+      let c0, r0 = bigint.DivRem (time - si, _2)
+//      let c1, r1 = bigint.DivRem (time + si, _2)
+      let v1 = bigint.Divide (time + si, _2)
+      let v0 = c0 + if r0.IsZero then bigint.Zero else bigint.One
+//      let v1 = c1 + if r1.IsZero then bigint.Zero else bigint.One
+      Some (v0, v1)
+    else
+      None
+
+let input3  = (434104122191218812191221401434I, 5881967667691885I)
+
+do
+  let d, t = input3
+  match BI.getChargeBI d t with
+  | Some (c0, c1) ->
+    let r = c1 - c0 + bigint.One
+    printfn "Result: %A, %A, %A" c0 c1 r
+  | None ->
+    printfn "No result"
