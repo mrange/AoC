@@ -20,28 +20,21 @@ let diff vs =
   |> Array.pairwise 
   |> Array.map (fun (x, y) -> y - x)
 
-[<TailCall>]
-let rec interpolateLast (diff : int64) history =
-  match history with
-  | []    -> diff
-  | x::xs ->
-    let diff = (x |> Array.last) + diff
-    interpolateLast diff xs
+let interpolateLast history =
+  history 
+  |> List.fold (fun s x -> (x |> Array.last) + s) 0L
 
 [<TailCall>]
-let rec interpolateFirst (diff : int64) history =
-  match history with
-  | []    -> diff
-  | x::xs ->
-    let diff = (x |> Array.head) - diff
-    interpolateFirst diff xs
+let rec interpolateFirst history =
+  history 
+  |> List.fold (fun s x -> (x |> Array.head) - s) 0L
 
 [<TailCall>]
 let rec solve interpolate history =
   let vs = history |> List.head
   let ds = diff vs
   if ds |> Array.forall (fun x -> x = 0L) then
-    interpolate 0L history
+    interpolate history
   else
     solve interpolate (ds::history)
 
