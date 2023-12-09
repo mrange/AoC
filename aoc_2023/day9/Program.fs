@@ -20,21 +20,16 @@ let diff vs =
   |> Array.pairwise 
   |> Array.map (fun (x, y) -> y - x)
 
-let interpolateLast history =
-  history 
-  |> List.fold (fun s x -> (x |> Array.last) + s) 0L
+let interpolateLast diff history = (history |> Array.last) + diff
 
-[<TailCall>]
-let rec interpolateFirst history =
-  history 
-  |> List.fold (fun s x -> (x |> Array.head) - s) 0L
+let interpolateFirst diff history = (history |> Array.head) - diff
 
 [<TailCall>]
 let rec solve interpolate history =
   let vs = history |> List.head
   let ds = diff vs
-  if ds |> Array.forall (fun x -> x = 0L) then
-    interpolate history
+  if ds |> Array.forall ((=) 0L) then
+    history |> List.fold interpolate 0L
   else
     solve interpolate (ds::history)
 
