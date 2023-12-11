@@ -1,20 +1,6 @@
 ﻿open System.IO
 open System.Linq
 
-let input_ = 
-  [|
-    "...#......"
-    ".......#.."
-    "#........."
-    ".........."
-    "......#..."
-    ".#........"
-    ".........#"
-    ".........."
-    ".......#.."
-    "#...#....."
-  |]
-
 let input = File.ReadAllLines "input.txt"
 
 type Galaxy =
@@ -24,7 +10,7 @@ type Galaxy =
     Y   : int64
   }
 
-let rows = input.Length
+let rows    = input.Length
 let columns =
   let cs = input |> Array.map _.Length |> Array.distinct
   if cs.Length = 1 then
@@ -47,23 +33,16 @@ let galaxies = parse ()
 let allColumns  = Array.init columns int64
 let allRows     = Array.init rows    int64
 
-let notEmptyColumns = 
-  galaxies 
-  |> Array.map (fun g -> g.X)
-  |> Array.distinct
-
-let notEmptyRows = 
-  galaxies 
-  |> Array.map (fun g -> g.Y)
-  |> Array.distinct
+let notEmptyColumns = galaxies |> Array.map (fun g -> g.X) |> Array.distinct
+let notEmptyRows    = galaxies |> Array.map (fun g -> g.Y) |> Array.distinct
 
 let emptyColumns = (allColumns.Except notEmptyColumns).ToArray ()
 let emptyRows    = (allRows.Except notEmptyRows).ToArray ()
 
-let increment = 1000000L-1L
+let expand = 1000000L-1L
 
-let expandX x (g : Galaxy) = if g.X > x then { g with X = g.X + increment } else g
-let expandY y (g : Galaxy) = if g.Y > y then { g with Y = g.Y + increment } else g
+let expandX x (g : Galaxy) = if g.X > x then { g with X = g.X + expand } else g
+let expandY y (g : Galaxy) = if g.Y > y then { g with Y = g.Y + expand } else g
 
 let expand0 =
   emptyColumns
@@ -75,16 +54,9 @@ let expand1 =
   |> Array.sortBy (fun y -> -y)
   |> Array.fold (fun s y -> s |> Array.map (expandY y)) expand0
 
-//printfn "%A" galaxies
-
-//printfn "%A" expand1
-
-let distances = 
+let sum = 
   Array.allPairs expand1 expand1
-  |> Array.map (fun (f, s) -> f.Id, s.Id, abs (f.X-s.X) + abs (f.Y-s.Y))
+  |> Array.map (fun (f, s) -> abs (f.X-s.X) + abs (f.Y-s.Y))
+  |> Array.sum
 
-let sum =
-  distances
-  |> Array.sumBy (fun (_, _, d) -> d)
-//printfn "%A" distances
 printfn "%A" (sum / 2L)
