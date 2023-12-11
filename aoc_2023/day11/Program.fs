@@ -1,7 +1,7 @@
 ﻿open System.IO
 open System.Linq
 
-let input = File.ReadAllLines "input.txt"
+let input : string array = File.ReadAllLines "input.txt"
 
 type Galaxy =
   {
@@ -10,12 +10,12 @@ type Galaxy =
     Y   : int64
   }
 
-let rows    = input.Length
-let columns =
+let rows    : int = input.Length
+let columns : int =
   let cs = input |> Array.map _.Length |> Array.distinct
   if cs.Length = 1 then cs.[0] else failwithf "Different inputs widths: %A" cs
 
-let parse () =
+let parse () : Galaxy array =
   [|
     for y = 0 to rows - 1 do
       let r = input.[y]
@@ -25,33 +25,35 @@ let parse () =
           yield {Id = (x,y); X = x; Y = y}
   |]
 
-let galaxies = parse ()
+let galaxies        : Galaxy array = parse ()
 
-let allColumns  = Array.init columns int64
-let allRows     = Array.init rows    int64
+let allColumns      : int64 array = Array.init columns int64
+let allRows         : int64 array = Array.init rows    int64
 
-let notEmptyColumns = galaxies |> Array.map (fun g -> g.X) |> Array.distinct
-let notEmptyRows    = galaxies |> Array.map (fun g -> g.Y) |> Array.distinct
+let notEmptyColumns : int64 array = galaxies |> Array.map (fun g -> g.X) |> Array.distinct
+let notEmptyRows    : int64 array = galaxies |> Array.map (fun g -> g.Y) |> Array.distinct
 
-let emptyColumns = allColumns.Except notEmptyColumns |> Seq.toArray
-let emptyRows    = allRows.Except notEmptyRows |> Seq.toArray
+let emptyColumns    : int64 array = allColumns.Except notEmptyColumns |> Seq.toArray
+let emptyRows       : int64 array = allRows.Except notEmptyRows |> Seq.toArray
 
-let expandWith = 1000000L-1L
+let expandWith      : int64       = 1000000L-1L
 
-let expandX x (g : Galaxy) = if g.X > x then { g with X = g.X + expandWith } else g
-let expandY y (g : Galaxy) = if g.Y > y then { g with Y = g.Y + expandWith } else g
+let expandX (x : int64) (g : Galaxy) : Galaxy = 
+  if g.X > x then { g with X = g.X + expandWith } else g
+let expandY (y : int64) (g : Galaxy) : Galaxy = 
+  if g.Y > y then { g with Y = g.Y + expandWith } else g
 
-let expandedColumns =
+let expandedColumns       : Galaxy array  =
   emptyColumns
   |> Array.sortBy (fun x -> -x)
   |> Array.fold (fun s x -> s |> Array.map (expandX x)) galaxies
 
-let expandColumnsAndRows =
+let expandColumnsAndRows  : Galaxy array  =
   emptyRows
   |> Array.sortBy (fun y -> -y)
   |> Array.fold (fun s y -> s |> Array.map (expandY y)) expandedColumns
 
-let sum = 
+let sum : int64 = 
   Array.allPairs expandColumnsAndRows expandColumnsAndRows
   |> Array.map (fun (f, s) -> abs (f.X-s.X) + abs (f.Y-s.Y))
   |> Array.sum
