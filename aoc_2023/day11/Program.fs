@@ -44,18 +44,18 @@ let expand = 1000000L-1L
 let expandX x (g : Galaxy) = if g.X > x then { g with X = g.X + expand } else g
 let expandY y (g : Galaxy) = if g.Y > y then { g with Y = g.Y + expand } else g
 
-let expand0 =
+let expandedColumns =
   emptyColumns
   |> Array.sortBy (fun x -> -x)
   |> Array.fold (fun s x -> s |> Array.map (expandX x)) galaxies
 
-let expand1 =
+let expandColumnsAndRows =
   emptyRows
   |> Array.sortBy (fun y -> -y)
-  |> Array.fold (fun s y -> s |> Array.map (expandY y)) expand0
+  |> Array.fold (fun s y -> s |> Array.map (expandY y)) expandedColumns
 
 let sum = 
-  Array.allPairs expand1 expand1
+  Array.allPairs expandColumnsAndRows expandColumnsAndRows
   |> Array.map (fun (f, s) -> abs (f.X-s.X) + abs (f.Y-s.Y))
   |> Array.sum
 
