@@ -19,9 +19,9 @@ let input = File.ReadAllLines "input.txt"
 
 type Galaxy =
   {
-    Id  : int*int
-    X   : int
-    Y   : int
+    Id  : int64*int64
+    X   : int64
+    Y   : int64
   }
 
 let rows = input.Length
@@ -44,8 +44,8 @@ let parse () =
 
 let galaxies = parse ()
 
-let allColumns  = Array.init columns id
-let allRows     = Array.init rows    id
+let allColumns  = Array.init columns int64
+let allRows     = Array.init rows    int64
 
 let notEmptyColumns = 
   galaxies 
@@ -60,8 +60,10 @@ let notEmptyRows =
 let emptyColumns = (allColumns.Except notEmptyColumns).ToArray ()
 let emptyRows    = (allRows.Except notEmptyRows).ToArray ()
 
-let expandX x (g : Galaxy) = if g.X > x then { g with X = g.X + 1 } else g
-let expandY y (g : Galaxy) = if g.Y > y then { g with Y = g.Y + 1 } else g
+let increment = 1000000L-1L
+
+let expandX x (g : Galaxy) = if g.X > x then { g with X = g.X + increment } else g
+let expandY y (g : Galaxy) = if g.Y > y then { g with Y = g.Y + increment } else g
 
 let expand0 =
   emptyColumns
@@ -85,4 +87,4 @@ let sum =
   distances
   |> Array.sumBy (fun (_, _, d) -> d)
 //printfn "%A" distances
-printfn "%A" (sum / 2)
+printfn "%A" (sum / 2L)
