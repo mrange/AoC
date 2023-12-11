@@ -13,20 +13,17 @@ type Galaxy =
 let rows    = input.Length
 let columns =
   let cs = input |> Array.map _.Length |> Array.distinct
-  if cs.Length = 1 then
-    cs.[0]
-  else
-    failwithf "Different inputs widths: %A" cs
+  if cs.Length = 1 then cs.[0] else failwithf "Different inputs widths: %A" cs
 
 let parse () =
-  let galaxies = ResizeArray<Galaxy> ()
-  for y = 0 to rows - 1 do
-    let r = input.[y]
-    for x = 0 to columns - 1 do
-      let c = r.Chars x
-      if c = '#' then
-        galaxies.Add {Id = (x,y); X = x; Y = y}
-  galaxies.ToArray ()
+  [|
+    for y = 0 to rows - 1 do
+      let r = input.[y]
+      for x = 0 to columns - 1 do
+        let c = r.Chars x
+        if c = '#' then
+          yield {Id = (x,y); X = x; Y = y}
+  |]
 
 let galaxies = parse ()
 
@@ -36,13 +33,13 @@ let allRows     = Array.init rows    int64
 let notEmptyColumns = galaxies |> Array.map (fun g -> g.X) |> Array.distinct
 let notEmptyRows    = galaxies |> Array.map (fun g -> g.Y) |> Array.distinct
 
-let emptyColumns = (allColumns.Except notEmptyColumns).ToArray ()
-let emptyRows    = (allRows.Except notEmptyRows).ToArray ()
+let emptyColumns = allColumns.Except notEmptyColumns |> Seq.toArray
+let emptyRows    = allRows.Except notEmptyRows |> Seq.toArray
 
-let expand = 1000000L-1L
+let expandWith = 1000000L-1L
 
-let expandX x (g : Galaxy) = if g.X > x then { g with X = g.X + expand } else g
-let expandY y (g : Galaxy) = if g.Y > y then { g with Y = g.Y + expand } else g
+let expandX x (g : Galaxy) = if g.X > x then { g with X = g.X + expandWith } else g
+let expandY y (g : Galaxy) = if g.Y > y then { g with Y = g.Y + expandWith } else g
 
 let expandedColumns =
   emptyColumns
